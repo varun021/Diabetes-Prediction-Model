@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Analysis Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body class="bg-gray-50">
+
+    <div class="min-h-screen">
+
+        <!-- Navigation -->
+        <nav class="bg-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <span class="text-xl font-bold text-gray-800">Diabetes Analysis Dashboard</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm text-gray-500">Last Updated: {{ stats.last_updated }}</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-sm font-medium text-gray-500">Total Patients</h3>
+                    <p class="mt-2 text-3xl font-semibold text-gray-900">{{ stats.total_patients }}</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-sm font-medium text-gray-500">Diabetic Patients</h3>
+                    <p class="mt-2 text-3xl font-semibold text-gray-900">{{ stats.diabetic_patients }}</p>
+                    <p class="text-sm text-gray-500">({{ stats.diabetic_percentage }}%)</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-sm font-medium text-gray-500">High Risk Patients</h3>
+                    <p class="mt-2 text-3xl font-semibold text-gray-900">{{ stats.high_risk_patients }}</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-sm font-medium text-gray-500">Average BMI</h3>
+                    <p class="mt-2 text-3xl font-semibold text-gray-900">{{ stats.avg_bmi }}</p>
+                </div>
+            </div>
+
+            <!-- Prediction Form -->
+            <div class="bg-white rounded-lg shadow mb-8">
+                <div class="p-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Diabetes Risk Prediction</h2>
+                    <form id="predictionForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Pregnancies</label>
+                            <input type="number" name="Pregnancies" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Glucose</label>
+                            <input type="number" name="Glucose" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Blood Pressure</label>
+                            <input type="number" name="BloodPressure" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Skin Thickness</label>
+                            <input type="number" name="SkinThickness" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Insulin</label>
+                            <input type="number" name="Insulin" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">BMI</label>
+                            <input type="number" name="BMI" step="0.1" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Diabetes Pedigree</label>
+                            <input type="number" name="DiabetesPedigreeFunction" step="0.001" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Age</label>
+                            <input type="number" name="Age" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </form>
+                    <div class="mt-4">
+                        <button type="submit" form="predictionForm" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Calculate Risk
+                        </button>
+                    </div>
+                    <div id="predictionResult" class="mt-4 hidden">
+                        <div class="p-4 rounded-md bg-gray-50">
+                            <h3 class="text-lg font-medium text-gray-900">Prediction Result</h3>
+                            <p class="mt-2 text-sm text-gray-500">Risk of Diabetes: <span id="riskPercentage" class="font-semibold"></span></p>
+                            <p id="recommendations" class="mt-2 text-sm text-gray-500"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualizations -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Glucose Distribution -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Glucose Distribution</h3>
+                        <div id="glucosePlot" class="w-full h-96"></div>
+                    </div>
+                </div>
+
+                <!-- BMI vs Age -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">BMI vs Age Analysis</h3>
+                        <div id="scatterPlot" class="w-full h-96"></div>
+                    </div>
+                </div>
+
+                <!-- Feature Correlation -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Feature Correlation Matrix</h3>
+                        <div id="heatmapPlot" class="w-full h-96"></div>
+                    </div>
+                </div>
+
+                <!-- Feature Importance -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Feature Importance</h3>
+                        <div id="importancePlot" class="w-full h-96"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Parse and render plots
+        Plotly.newPlot('glucosePlot', JSON.parse('{{ plots.glucose_plot | safe }}'));
+        Plotly.newPlot('scatterPlot', JSON.parse('{{ plots.scatter_plot | safe }}'));
+        Plotly.newPlot('heatmapPlot', JSON.parse('{{ plots.heatmap_plot | safe }}'));
+        Plotly.newPlot('importancePlot', JSON.parse('{{ plots.importance_plot | safe }}'));
+
+        // Handle form submission
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                document.getElementById('predictionResult').classList.remove('hidden');
+                document.getElementById('riskPercentage').textContent = `${result.probability}%`;
+
+                // Display recommendations
+                document.getElementById('recommendations').textContent = result.recommendations;
+
+                // Add color coding based on risk level
+                const riskSpan = document.getElementById('riskPercentage');
+                if (result.probability < 30) {
+                    riskSpan.className = 'text-green-600 font-semibold';
+                } else if (result.probability < 70) {
+                    riskSpan.className = 'text-yellow-600 font-semibold';
+                } else {
+                    riskSpan.className = 'text-red-600 font-semibold';
+                }
+            } catch (error) {
+                alert('Error making prediction: ' + error.message);
+            }
+        });
+    </script>
+
+</body>
+</html>
